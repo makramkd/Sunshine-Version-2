@@ -8,5 +8,18 @@
 
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="title_activity_settings">Settings</string>
+    <string name="title_activity_detail">Detail</string>
+    <string name="pref_location_label">Location</string>
+    <string name="pref_location_key">location</string>
+    <string name="pref_location_default">94043,US</string>
+    <string name="pref_units_label">Temperature Units</string>
+    <string name="pref_units_key">temperatureUnits</string>
+    <string name="pref_units_default">Metric</string>
+    <string name="pref_units_select">Select Temperature Units</string>
+    <string name="pref_units_metric">Metric</string>
+    <string name="pref_units_imperial">Imperial</string>
+    <string name="action_view_location">View Location in Maps</string>
+    <string name="action_share">Share</string>
 
 </resources>

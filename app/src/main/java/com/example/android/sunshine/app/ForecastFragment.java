@@ -1,10 +1,13 @@
 package com.example.android.sunshine.app;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Build;
-import android.support.v4.app.Fragment;
 import android.os.Bundle;
+import android.preference.PreferenceManager;
+import android.support.v4.app.Fragment;
 import android.text.format.Time;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -16,8 +19,6 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -31,7 +32,6 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
-import java.util.Arrays;
 
 /**
  * Created by admin on 5/6/16.
@@ -71,6 +71,12 @@ public class ForecastFragment extends Fragment {
     }
 
     @Override
+    public void onStart() {
+        super.onStart();
+        updateWeather();
+    }
+
+    @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         super.onCreateOptionsMenu(menu, inflater);
 
@@ -90,16 +96,21 @@ public class ForecastFragment extends Fragment {
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TextView textView = (TextView) view.findViewById(R.id.list_item_forecast_textview);
-                Toast.makeText(getActivity(), textView.getText().toString(), Toast.LENGTH_SHORT)
-                    .show();
+                Intent intent = new Intent(getContext(), DetailActivity.class);
+                intent.putExtra(Intent.EXTRA_TEXT, forecastAdapter.getItem(position));
+                startActivity(intent);
             }
         });
 
-        AsyncTask<String, Void, String[]> fetchWeatherTask = new FetchWeatherTask();
-        fetchWeatherTask.execute("94043,USA");
-
         return rootView;
+    }
+
+    private void updateWeather() {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String location = preferences.getString(getString(R.string.pref_location_key),
+                getString(R.string.pref_location_default));
+        AsyncTask<String, Void, String[]> fetchWeatherTask = new FetchWeatherTask();
+        fetchWeatherTask.execute(location);
     }
 
     @Override
@@ -107,8 +118,7 @@ public class ForecastFragment extends Fragment {
         switch (item.getItemId()) {
             case R.id.action_refresh:
                 Log.e(FORECAST_FRAG_TAG, "Refresh button clicked!");
-                AsyncTask<String, Void, String[]> fetchWeatherTask = new FetchWeatherTask();
-                fetchWeatherTask.execute("94043,USA");
+                updateWeather();
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -143,6 +153,18 @@ public class ForecastFragment extends Fragment {
     }
 
     private String formatHighLows(double high, double low) {
+        SharedPreferences sharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        String units = sharedPreferences.getString(
+                getString(R.string.pref_units_key),
+                getString(R.string.pref_units_default)
+        ).toLowerCase();
+
+        // convert to imperial to modify view
+        if (units.equals(getString(R.string.pref_units_imperial).toLowerCase())) {
+            high = (high * 1.8) + 32;
+            low = (low * 1.8) + 32;
+        }
+
         return Math.round(high) + "/" + Math.round(low);
     }
 
